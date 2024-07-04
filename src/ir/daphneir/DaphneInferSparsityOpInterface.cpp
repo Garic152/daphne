@@ -100,6 +100,160 @@ std::vector<double> daphne::ReadOp::inferSparsity() {
         return {-1.0};
 }
 
+// --------------------------------------------------------------------
+// Unary
+// --------------------------------------------------------------------
+
+std::vector<double> daphne::SliceColOp::inferSparsity() {
+    auto argTy = getSource().getType().dyn_cast<daphne::MatrixType>();
+    if(argTy.getSparsity() == -1.0) {
+        return {-1.0};
+        }
+        return {argTy.getSparsity()};
+}
+
+std::vector<double> daphne::SliceRowOp::inferSparsity() {
+    auto argTy = getSource().getType().dyn_cast<daphne::MatrixType>();
+    if(argTy.getSparsity() == -1.0) {
+        return {-1.0};
+        }
+        return {argTy.getSparsity()};
+}
+
+// --------------------------------------------------------------------
+// Data Generation
+// --------------------------------------------------------------------
+
+std::vector<double> daphne::FillOp::inferSparsity() {
+    auto co = CompilerUtils::constantOfAnyType(getArg());
+    if (!co) {
+        return {-1.0};
+    }
+
+    double v = 0.0;
+
+    auto valueAttr = co->getAttr("value");
+    if (auto floatAttr = valueAttr.dyn_cast<mlir::FloatAttr>()) {
+        v = floatAttr.getValueAsDouble();
+    } else if (auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>()) {
+        if (intAttr.getType().isSignlessInteger()) {
+            v = static_cast<double>(intAttr.getInt());
+        } else if (intAttr.getType().isSignedInteger()) {
+            v = static_cast<double>(intAttr.getSInt());
+        }
+    }
+
+    if (v == -1.0) {
+        return {-1.0};
+    } else if (v == 0.0) {
+        return {1.0};
+    } else {
+        return {0.0};
+    }
+}
+
+std::vector<double> daphne::SeqOp::inferSparsity() {
+    auto fromCo = CompilerUtils::constantOfAnyType(getFrom());
+    auto toCo = CompilerUtils::constantOfAnyType(getTo());
+    auto incCo = CompilerUtils::constantOfAnyType(getInc());
+
+    if (!fromCo || !toCo || !incCo) {
+        return {-1.0};
+    }
+    // helper lamdba function to extract the values out of the constantOperations
+    auto getDoubleValue = [](mlir::Operation *co) -> double {
+        auto valueAttr = co->getAttr("value");
+        if (auto floatAttr = valueAttr.dyn_cast<mlir::FloatAttr>()) {
+            return floatAttr.getValueAsDouble();
+        }
+        else {
+            auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>();
+            return static_cast<double>(intAttr.getSInt());
+        }
+    };
+
+    double from = getDoubleValue(fromCo);
+    double to = getDoubleValue(toCo);
+    double inc = getDoubleValue(incCo);
+
+    if ((from < 0 && inc < 0) || (from > 0 && inc > 0) || (from < 0 && to < 0) || (from > 0 && to > 0)) {
+        return {0.0};
+    } else if (fmod(from, inc) == 0) {
+        int numRows = (abs(from) + abs(to) + 1) / inc;
+        return {1 / (double)numRows};
+    } else {
+        return {0.0};
+    }
+}
+
+// --------------------------------------------------------------------
+// Elementwise Unary
+// --------------------------------------------------------------------
+
+std::vector<double> daphne::EwAbsOp::inferSparsity() {
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    return {argTy.getSparsity()};
+}
+
+std::vector<double> daphne::EwSignOp::inferSparsity() {
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    return {argTy.getSparsity()};
+}
+
+std::vector<double> daphne::EwSqrtOp::inferSparsity() {
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    return {argTy.getSparsity()};
+}
+
+std::vector<double> daphne::EwExpOp::inferSparsity() {
+    return {1.0};
+}
+
+std::vector<double> daphne::EwLnOp::inferSparsity() {
+    return {1.0};
+}
+
+std::vector<double> daphne::EwSinOp::inferSparsity() {
+    return {-1.0};
+}
+
+std::vector<double> daphne::EwCosOp::inferSparsity() {
+    return {-1.0};
+}
+
+std::vector<double> daphne::EwTanOp::inferSparsity() {
+    return {-1.0};
+}
+
+std::vector<double> daphne::EwSinhOp::inferSparsity() {
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    return {argTy.getSparsity()};
+}
+
+std::vector<double> daphne::EwCoshOp::inferSparsity() {
+    return {1.0};
+}
+
+std::vector<double> daphne::EwTanhOp::inferSparsity() {
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    return {argTy.getSparsity()};
+}
+
+std::vector<double> daphne::EwAsinOp::inferSparsity() {
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    return {argTy.getSparsity()};
+}
+
+std::vector<double> daphne::EwAcosOp::inferSparsity() {
+    return {-1.0};
+}
+
+std::vector<double> daphne::EwAtanOp::inferSparsity() {
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    return {argTy.getSparsity()};
+}
+
+
 // ****************************************************************************
 // Sparsity inference trait implementations
 // ****************************************************************************
