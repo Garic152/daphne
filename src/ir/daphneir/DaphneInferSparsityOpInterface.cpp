@@ -146,9 +146,9 @@ std::vector<double> daphne::FillOp::inferSparsity() {
     if (v == -1.0) {
         return {-1.0};
     } else if (v == 0.0) {
-        return {1.0};
-    } else {
         return {0.0};
+    } else {
+        return {1.0};
     }
 }
 
@@ -177,12 +177,12 @@ std::vector<double> daphne::SeqOp::inferSparsity() {
     double inc = getDoubleValue(incCo);
 
     if ((from < 0 && inc < 0) || (from > 0 && inc > 0) || (from < 0 && to < 0) || (from > 0 && to > 0)) {
-        return {0.0};
+        return {1.0};
     } else if (fmod(from, inc) == 0) {
-        int numRows = (abs(from) + abs(to) + 1) / inc;
-        return {1 / (double)numRows};
+        int numRows = abs((to - from) / inc) + 1;
+        return {1.0 / (double)numRows};
     } else {
-        return {0.0};
+        return {1.0};
     }
 }
 
