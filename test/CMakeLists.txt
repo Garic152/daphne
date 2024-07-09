@@ -64,6 +64,7 @@ set(TEST_SOURCES
         codegen/MatMulAccuracyTest.cpp
 
         ir/daphneir/InferTypesTest.cpp
+        ir/daphneir/InferSparsityTest.cpp
 
         parser/config/ConfigParserTest.cpp
 

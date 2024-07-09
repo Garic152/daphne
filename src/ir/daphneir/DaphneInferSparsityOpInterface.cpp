@@ -141,6 +141,8 @@ std::vector<double> daphne::FillOp::inferSparsity() {
         } else if (intAttr.getType().isSignedInteger()) {
             v = static_cast<double>(intAttr.getSInt());
         }
+    } else {
+        throw std::runtime_error("Unsupported type for FillOp sparsity inference");
     }
 
     if (v == -1.0) {
@@ -165,11 +167,14 @@ std::vector<double> daphne::SeqOp::inferSparsity() {
         auto valueAttr = co->getAttr("value");
         if (auto floatAttr = valueAttr.dyn_cast<mlir::FloatAttr>()) {
             return floatAttr.getValueAsDouble();
+        } else if (auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>()) {
+            if (intAttr.getType().isSignlessInteger()) {
+                return static_cast<double>(intAttr.getInt());
+            } else if (intAttr.getType().isSignedInteger()) {
+                return  static_cast<double>(intAttr.getSInt());
+            }
         }
-        else {
-            auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>();
-            return static_cast<double>(intAttr.getSInt());
-        }
+        throw std::runtime_error("Unsupported type for SeqOp sparsity inference");
     };
 
     double from = getDoubleValue(fromCo);
