@@ -155,107 +155,65 @@ std::vector<double> daphne::FillOp::inferSparsity() {
 }
 
 std::vector<double> daphne::SeqOp::inferSparsity() {
-    auto fromCo = CompilerUtils::constantOfAnyType(getFrom());
-    auto toCo = CompilerUtils::constantOfAnyType(getTo());
-    auto incCo = CompilerUtils::constantOfAnyType(getInc());
+    Type fromTy = getFrom().getType();
+    if(fromTy.isF64()) {
+        try {
+            double vFrom = CompilerUtils::constantOrThrow<double>(getFrom());
+            double vTo = CompilerUtils::constantOrThrow<double>(getTo());
+            double vInc = CompilerUtils::constantOrThrow<double>(getInc());
 
-    if (!fromCo || !toCo || !incCo) {
-        return {-1.0};
-    }
-    // helper lamdba function to extract the values out of the constantOperations
-    auto getDoubleValue = [](mlir::Operation *co) -> double {
-        auto valueAttr = co->getAttr("value");
-        if (auto floatAttr = valueAttr.dyn_cast<mlir::FloatAttr>()) {
-            return floatAttr.getValueAsDouble();
-        } else if (auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>()) {
-            if (intAttr.getType().isSignlessInteger()) {
-                return static_cast<double>(intAttr.getInt());
-            } else if (intAttr.getType().isSignedInteger()) {
-                return  static_cast<double>(intAttr.getSInt());
-            }
+            if ((vFrom < 0.0 && vInc < 0.0) || (vFrom > 0.0 && vInc > 0.0) || (vFrom < 0.0 && vTo < 0.0) || (vFrom > 0.0 && vTo > 0.0)) {
+                return {1.0};
+            } else if (fmod(vFrom, vInc) == 0.0) {
+                int numRows = abs((vTo - vFrom) / vInc) + 1.0;
+                return {1 - (1.0 / (double)numRows)};
+            } 
+            return {1.0};
         }
-        throw std::runtime_error("Unsupported type for SeqOp sparsity inference");
-    };
-
-    double from = getDoubleValue(fromCo);
-    double to = getDoubleValue(toCo);
-    double inc = getDoubleValue(incCo);
-
-    if ((from < 0 && inc < 0) || (from > 0 && inc > 0) || (from < 0 && to < 0) || (from > 0 && to > 0)) {
-        return {1.0};
-    } else if (fmod(from, inc) == 0) {
-        int numRows = abs((to - from) / inc) + 1;
-        return {1.0 / (double)numRows};
-    } else {
-        return {1.0};
+        catch(const std::runtime_error & e) {
+            return {-1.0};
+        }
     }
-}
+    if(fromTy.isF32()) {
+        try {
+            float vFrom = CompilerUtils::constantOrThrow<float>(getFrom());
+            float vTo = CompilerUtils::constantOrThrow<float>(getTo());
+            float vInc = CompilerUtils::constantOrThrow<float>(getInc());
 
-// --------------------------------------------------------------------
-// Elementwise Unary
-// --------------------------------------------------------------------
-
-std::vector<double> daphne::EwAbsOp::inferSparsity() {
-    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
-    return {argTy.getSparsity()};
-}
-
-std::vector<double> daphne::EwSignOp::inferSparsity() {
-    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
-    return {argTy.getSparsity()};
-}
-
-std::vector<double> daphne::EwSqrtOp::inferSparsity() {
-    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
-    return {argTy.getSparsity()};
-}
-
-std::vector<double> daphne::EwExpOp::inferSparsity() {
-    return {1.0};
-}
-
-std::vector<double> daphne::EwLnOp::inferSparsity() {
-    return {1.0};
-}
-
-std::vector<double> daphne::EwSinOp::inferSparsity() {
-    return {-1.0};
-}
-
-std::vector<double> daphne::EwCosOp::inferSparsity() {
-    return {-1.0};
-}
-
-std::vector<double> daphne::EwTanOp::inferSparsity() {
-    return {-1.0};
-}
-
-std::vector<double> daphne::EwSinhOp::inferSparsity() {
-    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
-    return {argTy.getSparsity()};
-}
-
-std::vector<double> daphne::EwCoshOp::inferSparsity() {
-    return {1.0};
-}
-
-std::vector<double> daphne::EwTanhOp::inferSparsity() {
-    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
-    return {argTy.getSparsity()};
-}
-
-std::vector<double> daphne::EwAsinOp::inferSparsity() {
-    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
-    return {argTy.getSparsity()};
-}
-
-std::vector<double> daphne::EwAcosOp::inferSparsity() {
-    return {-1.0};
-}
-
-std::vector<double> daphne::EwAtanOp::inferSparsity() {
-    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
-    return {argTy.getSparsity()};
+            if ((vFrom < 0.0 && vInc < 0.0) || (vFrom > 0.0 && vInc > 0.0) || (vFrom < 0.0 && vTo < 0.0) || (vFrom > 0.0 && vTo > 0.0)) {
+                return {1.0};
+            } else if (fmod(vFrom, vInc) == 0.0) {
+                int numRows = abs((vTo - vFrom) / vInc) + 1.0;
+                return {1 - (1.0 / (double)numRows)};
+            } 
+            return {1.0};
+        }
+        catch(const std::runtime_error & e) {
+            return {-1.0};
+        }
+    }
+    else if(fromTy.isSignedInteger(64)) {
+        try {
+            int64_t vFrom = CompilerUtils::constantOrThrow<int64_t>(getFrom());
+            int64_t vTo = CompilerUtils::constantOrThrow<int64_t>(getTo());
+            int64_t vInc = CompilerUtils::constantOrThrow<int64_t>(getInc());
+            
+            if ((vFrom < 0 && vInc < 0) || (vFrom > 0 && vInc > 0) || (vFrom < 0 && vTo < 0) || (vFrom > 0 && vTo > 0)) {
+                return {1.0};
+            } else if (fmod(vFrom, vInc) == 0) {
+                int numRows = abs((vTo - vFrom) / vInc) + 1;
+                return {1 - (1.0 / (double)numRows)};
+            } 
+            return {1.0};
+        }
+        catch(const std::runtime_error & e) {
+            return {-1.0};
+        }
+    }
+    throw ErrorHandler::compilerError(
+        getLoc(), "InferSparsityOpInterface (daphne::SeqOp::inferSparsity)",
+        "at the moment, sparsity inference for SeqOp supports only F64/F32 and "
+        "SI64 value types");
 }
 
 
@@ -315,6 +273,14 @@ std::vector<double> daphne::tryInferSparsity(Operation *op) {
 
         if(op->hasTrait<CompletelyDense>()) {
             sparsity = 1.0;
+        }
+
+        if(op->hasTrait<SparsityRemains>()) {
+            sparsity = getSparsityOrUnknownFromType(op->getOperand(0));
+        }
+
+        if(op->hasTrait<SparsityUnknown>()) {
+            sparsity = -1.0;
         }
 
         if(op->hasTrait<EwSparseIfBoth>()) {

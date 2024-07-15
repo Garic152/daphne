@@ -1,0 +1,69 @@
+// --------------------------------------------------------------------
+// Unary
+// --------------------------------------------------------------------
+
+X = rand(5, 5, 1, 1, 0.5, 1);
+// row slicing
+print(sparsity(X[:2,]));
+print(sparsity(X[2,]));
+print(sparsity(X[2:,]));
+
+// col slicing
+print(sparsity(X[,:2]));
+print(sparsity(X[,2]));
+print(sparsity(X[,2:]));
+
+// --------------------------------------------------------------------
+// Data Generation
+// --------------------------------------------------------------------
+
+// fill op
+print(sparsity(fill(0, 2, 2)));
+print(sparsity(fill(1, 2, 2)));
+print(sparsity(fill(0.0, 2, 2)));
+print(sparsity(fill(0.01, 2, 2)));
+
+// seq op
+print(sparsity(seq(0, 1, 1)));
+print(sparsity(seq(0, 7, 1)));
+print(sparsity(seq(1, 3, 1)));
+print(sparsity(seq(2, -1, -1)));
+print(sparsity(seq(-2, -1, 1)));
+print(sparsity(seq(0.0, 0.01, 0.01)));
+print(sparsity(seq(0.0, 0.07, 0.01)));
+print(sparsity(seq(0.01, 0.03, 0.01)));
+print(sparsity(seq(0.02, -0.01, -0.01)));
+print(sparsity(seq(-0.02, -0.01, 0.01)));
+
+// --------------------------------------------------------------------
+// Elementwise Unary
+// --------------------------------------------------------------------
+
+X = rand(2, 2, 1, 1, 0.5, 1);
+
+// sin
+print(sparsity(sin(X)));
+
+// cos
+print(sparsity(cos(X)));
+
+// tan
+print(sparsity(tan(X)));
+
+// asin
+print(sparsity(asin(X)));
+
+// acos
+print(sparsity(acos(X)));
+
+// atan
+print(sparsity(atan(X)));
+
+// sinh
+print(sparsity(sinh(X)));
+
+// cosh
+print(sparsity(cosh(X)));
+
+// tanh
+print(sparsity(tanh(X)));

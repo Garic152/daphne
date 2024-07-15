@@ -24,6 +24,12 @@ include "mlir/IR/OpBase.td"
 // it won't for all the other cases estimating with 1.0 is fine
 def CompletelyDense : NativeOpTrait<"CompletelyDense">;
 
+// Passes the input sparsity to the output
+def SparsityRemains : NativeOpTrait<"SparsityRemains">;
+
+// Sets the sparsity to -1.0 if the sparsity will be unknown after an operation
+def SparsityUnknown : NativeOpTrait<"SparsityUnknown">;
+
 class SparsityFromIthScalar<int i> : ParamNativeOpTrait<"SparsityFromIthScalar", !cast<string>(i)>;
 class SparsityFromIthArg<int i> : ParamNativeOpTrait<"SparsityFromIthArg", !cast<string>(i)>;
 def SparsityFromArg : SparsityFromIthArg<0>;

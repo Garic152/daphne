@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-#include <api/cli/Utils.h>
+#ifndef SRC_RUNTIME_LOCAL_KERNELS_SPARSITY_H
+#define SRC_RUNTIME_LOCAL_KERNELS_SPARSITY_H
 
-#include <tags.h>
+#include <runtime/local/context/DaphneContext.h>
 
-#include <catch.hpp>
+// ****************************************************************************
+// Convenience function
+// ****************************************************************************
 
-#include <string>
+template<class DTArg>
+double sparsity(const DTArg * arg, DCTX(ctx)) {
+    return -1.0;
+}
 
-const std::string dirPath = "test/ir/daphneir/";
-
-#define MAKE_TEST_CASE(name, count) \
-    TEST_CASE(name, TAG_OPERATIONS) { \
-        for(unsigned i = 1; i <= count; i++) { \
-            DYNAMIC_SECTION(name "_" << i << ".daphne") { \
-                compareDaphneToRefSimple(dirPath, name, i); \
-            } \
-        } \
-    }
-
-MAKE_TEST_CASE("sparsity", 1)
+#endif //SRC_RUNTIME_LOCAL_KERNELS_SPARSITY_H

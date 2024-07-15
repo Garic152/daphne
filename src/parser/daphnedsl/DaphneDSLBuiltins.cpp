@@ -465,6 +465,12 @@ antlrcpp::Any DaphneDSLBuiltins::build(mlir::Location loc, const std::string & f
     if(func == "ncell")
         return createNumOp<NumCellsOp>(loc, func, args);
 
+    if(func == "sparsity") {
+        checkNumArgsExact(loc, func, numArgs, 1);
+        mlir::Value arg = args[0];
+        return static_cast<mlir::Value>(builder.create<SparsityOp>(loc, builder.getF64Type(), arg));
+    }
+
     // ********************************************************************
     // Elementwise unary
     // ********************************************************************
