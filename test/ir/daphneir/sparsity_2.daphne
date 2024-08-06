@@ -1,0 +1,47 @@
+// --------------------------------------------------------------------
+// Unary
+// --------------------------------------------------------------------
+
+X = rand(5, 5, 1, 1, 0.5, 1);
+// row slicing
+print(sparsity(X[:2,]));
+print(sparsity(X[2,]));
+print(sparsity(X[2:,]));
+
+// col slicing
+print(sparsity(X[,:2]));
+print(sparsity(X[,2]));
+print(sparsity(X[,2:]));
+
+// --------------------------------------------------------------------
+// Elementwise Unary
+// --------------------------------------------------------------------
+
+X = rand(2, 2, 1, 1, 0.5, 1);
+
+// sin
+print(sparsity(sin(X)));
+
+// cos
+print(sparsity(cos(X)));
+
+// tan
+print(sparsity(tan(X)));
+
+// asin
+print(sparsity(asin(X)));
+
+// acos
+print(sparsity(acos(X)));
+
+// atan
+print(sparsity(atan(X)));
+
+// sinh
+print(sparsity(sinh(X)));
+
+// cosh
+print(sparsity(cosh(X)));
+
+// tanh
+print(sparsity(tanh(X)));

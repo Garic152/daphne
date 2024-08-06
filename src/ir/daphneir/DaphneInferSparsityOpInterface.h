@@ -39,6 +39,12 @@ namespace mlir::OpTrait {
 template<class ConcreteOp>
 class CompletelyDense : public TraitBase<ConcreteOp, CompletelyDense> {};
 
+template<class ConcreteOp>
+class SparsityRemains : public TraitBase<ConcreteOp, SparsityRemains> {};
+
+template<class ConcreteOp>
+class SparsityUnknown : public TraitBase<ConcreteOp, SparsityUnknown> {};
+
 template<size_t i>
 struct SparsityFromIthScalar {
     template<class ConcreteOp>
@@ -55,6 +61,12 @@ template<class ConcreteOp>
 class EwSparseIfEither : public TraitBase<ConcreteOp, EwSparseIfEither> {};
 template<class ConcreteOp>
 class EwSparseIfBoth : public TraitBase<ConcreteOp, EwSparseIfBoth> {};
+template<class ConcreteOp>
+class SparseIfInputSparse : public TraitBase<ConcreteOp, SparseIfInputSparse> {};
+template<class ConcreteOp>
+class DenseIfInputDense : public TraitBase<ConcreteOp, DenseIfInputDense> {};
+template<class ConcreteOp>
+class SparsityRemainsIfInputOneOrZero : public TraitBase<ConcreteOp, SparsityRemainsIfInputOneOrZero> {};
 
 }
 
