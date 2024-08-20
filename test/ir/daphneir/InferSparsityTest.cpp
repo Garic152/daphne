@@ -33,4 +33,4 @@ const std::string dirPath = "test/ir/daphneir/";
         } \
     }
 
-MAKE_TEST_CASE("sparsity", 1)
+MAKE_TEST_CASE("sparsity", 3)

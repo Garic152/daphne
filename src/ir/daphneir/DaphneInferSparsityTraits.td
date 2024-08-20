@@ -43,10 +43,10 @@ def EwSparseIfBoth : NativeOpTrait<"EwSparseIfBoth">;
 // if either element is zero, the result is zero
 def EwSparseIfEither : NativeOpTrait<"EwSparseIfEither">;
 // if all input elements are completely sparse, the resulting sparsity is 0.0 (works for 1 or 2 operands)
-def SparseIfInputSparse : NativeOpTrait<"SparseIfInputSparse">;
+def SparseIfAllInputSparse : NativeOpTrait<"SparseIfAllInputSparse">;
 // if all input elements are completely dense, the resulting sparsity is 1.0 (works for 1 or 2 operands)
-def DenseIfInputDense : NativeOpTrait<"DenseIfInputDense">;
+def DenseIfAllInputDense : NativeOpTrait<"DenseIfAllInputDense">;
 // if all input elements are either completely sparse or completely dense, the resulting sparsity is 0.0 or 1.0 respectively (works for 1 or 2 operands)
-def SparsityRemainsIfInputOneOrZero : NativeOpTrait<"SparsityRemainsIfInputOneOrZero">;
+def SparsityRemainsIfAllInputOneOrZero : NativeOpTrait<"SparsityRemainsIfAllInputOneOrZero">;
 
 #endif //SRC_IR_DAPHNEIR_DAPHNEINFERSPARSITYTRAITS_TD

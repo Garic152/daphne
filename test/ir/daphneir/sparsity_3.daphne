@@ -1,3 +1,127 @@
 // --------------------------------------------------------------------
-// EW Binary
+// Outer Binary
 // --------------------------------------------------------------------
+
+print("Outer Binary");
+
+// we take 3 matrices of different sparsities to take into account all the possible cases for the different ops.
+empty = rand(2, 2, 1, 1, 0.0, -1);
+half = rand(2, 2, 1, 1, 0.5, -1);
+full = rand(2, 2, 1, 1, 1.0, -1);
+unknown = sin(rand(2, 2, 1, 1, 0.5, -1));
+
+print("outeradd");
+print(sparsity(outeradd(empty, empty)));
+print(sparsity(empty + half));
+print(sparsity(half + half));
+print(sparsity(unknown + half));
+print(sparsity(unknown + unknown));
+
+
+print("outersub");
+print(sparsity(empty - empty));
+print(sparsity(empty - half));
+print(sparsity(half - half));
+print(sparsity(unknown - half));
+print(sparsity(unknown - unknown));
+
+print("outermul");
+print(sparsity(empty * empty));
+print(sparsity(empty * half));
+print(sparsity(half * half));
+print(sparsity(unknown * empty));
+print(sparsity(unknown * half));
+print(sparsity(unknown * unknown));
+
+print("outerdiv");
+print(sparsity(empty / empty));
+print(sparsity(empty / half));
+print(sparsity(half / half));
+print(sparsity(unknown / half));
+print(sparsity(half / unknown));
+print(sparsity(unknown / unknown));
+
+print("outerpow");
+print(sparsity(empty ^ empty));
+print(sparsity(empty ^ half));
+print(sparsity(half ^ half));
+print(sparsity(unknown ^ half));
+print(sparsity(unknown ^ unknown));
+
+print("outermod");
+print(sparsity(empty % empty));
+print(sparsity(empty % half));
+print(sparsity(half % half));
+print(sparsity(unknown % half));
+print(sparsity(unknown % unknown));
+
+print("outermin");
+print(sparsity(min(empty, empty)));
+print(sparsity(min(empty, half)));
+print(sparsity(min(full, full)));
+print(sparsity(min(unknown, empty)));
+
+print("outermax");
+print(sparsity(max(empty, empty)));
+print(sparsity(max(empty, half)));
+print(sparsity(max(full, full)));
+print(sparsity(max(unknown, empty)));
+
+print("outerand");
+print(sparsity(empty && empty));
+print(sparsity(empty && half));
+print(sparsity(half && half));
+print(sparsity(unknown && empty));
+print(sparsity(unknown && full));
+
+print("outeror");
+print(sparsity(empty || empty));
+print(sparsity(empty || half));
+print(sparsity(half || empty));
+print(sparsity(half || half));
+print(sparsity(unknown || empty));
+print(sparsity(unknown || full));
+
+print("outereq");
+print(sparsity(empty == empty));
+print(sparsity(full == full));
+print(sparsity(full == empty));
+print(sparsity(empty == full));
+print(sparsity(unknown == empty));
+print(sparsity(unknown == unknown));
+
+print("outerneq");
+print(sparsity(empty != empty));
+print(sparsity(full != full));
+print(sparsity(full != empty));
+print(sparsity(empty != full));
+print(sparsity(unknown != empty));
+print(sparsity(unknown != unknown));
+
+print("outerlt");
+print(sparsity(empty < empty));
+print(sparsity(full < full));
+print(sparsity(full < empty));
+print(sparsity(unknown < empty));
+print(sparsity(unknown < unknown));
+
+print("outerle");
+print(sparsity(empty <= empty));
+print(sparsity(full <= full));
+print(sparsity(full <= empty));
+print(sparsity(unknown <= empty));
+print(sparsity(unknown <= unknown));
+
+print("outergt");
+print(sparsity(empty > empty));
+print(sparsity(full > full));
+print(sparsity(full > empty));
+print(sparsity(unknown > empty));
+print(sparsity(unknown > unknown));
+
+print("outerge");
+print(sparsity(empty >= empty));
+print(sparsity(full >= full));
+print(sparsity(full >= empty));
+print(sparsity(unknown >= empty));
+print(sparsity(unknown >= unknown));

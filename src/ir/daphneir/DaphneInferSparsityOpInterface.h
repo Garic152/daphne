@@ -62,11 +62,11 @@ class EwSparseIfEither : public TraitBase<ConcreteOp, EwSparseIfEither> {};
 template<class ConcreteOp>
 class EwSparseIfBoth : public TraitBase<ConcreteOp, EwSparseIfBoth> {};
 template<class ConcreteOp>
-class SparseIfInputSparse : public TraitBase<ConcreteOp, SparseIfInputSparse> {};
+class SparseIfAllInputSparse : public TraitBase<ConcreteOp, SparseIfAllInputSparse> {};
 template<class ConcreteOp>
-class DenseIfInputDense : public TraitBase<ConcreteOp, DenseIfInputDense> {};
+class DenseIfAllInputDense : public TraitBase<ConcreteOp, DenseIfAllInputDense> {};
 template<class ConcreteOp>
-class SparsityRemainsIfInputOneOrZero : public TraitBase<ConcreteOp, SparsityRemainsIfInputOneOrZero> {};
+class SparsityRemainsIfAllInputOneOrZero : public TraitBase<ConcreteOp, SparsityRemainsIfAllInputOneOrZero> {};
 
 }
 

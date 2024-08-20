@@ -135,6 +135,57 @@ std::vector<double> daphne::FillOp::inferSparsity() {
     }
 }
 
+std::vector<double> daphne::SampleOp::inferSparsity() {
+    /*
+    * Infers the sparsity of the sample operation based on several conditions.
+    *
+    * If vRange is a float: 
+    *   - Return -1 due to the incredibly low change of an element being 0 in the double range
+    * 
+    * If withReplacement = 1: 
+    *   - The chance of an element being sparse is exactly 1 - 1/range.
+    * 
+    * If size == range:
+    *   - There will be exactly one 0 element, so the sparsity will be 1 - 1/size.
+    * 
+    * 4. If size < range:
+    *   - Use combinatorics to estimate the sparsity. For details, refer to the overleaf document mentioned in #766.
+    */
+    int64_t vSize;
+    bool vReplace;
+    try {
+            vSize = CompilerUtils::constantOrThrow<int64_t>(getSize());
+            vReplace = CompilerUtils::constantOrThrow<bool>(getWithReplacement());
+    } catch (const std::runtime_error & e) {
+        return {-1.0};
+    }
+
+    auto co = CompilerUtils::constantOfAnyType(getRange());
+    if (!co) {
+        return {-1.0};
+    }
+
+    int64_t vRange = 0;
+    auto valueAttr = co->getAttr("value");
+    if (auto floatAttr = valueAttr.dyn_cast<mlir::FloatAttr>()) {
+        return {-1.0};
+    } else if (auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>()) {
+        vRange = intAttr.getSInt();
+    } else {
+        throw std::runtime_error("Unsupported type for SampleOp sparsity inference");
+    }
+
+    if (vReplace == 1) {
+        return {1.0 - 1.0/(double)vRange};
+    }
+
+    if (vSize == vRange) {
+        return {1.0 - 1.0/(double)vSize};
+    }
+
+    return {1.0 - vSize/(double)vRange};
+}
+
 std::vector<double> daphne::SeqOp::inferSparsity() {
     Type fromTy = getFrom().getType();
     if(fromTy.isF64()) {
@@ -196,6 +247,8 @@ std::vector<double> daphne::SeqOp::inferSparsity() {
         "at the moment, sparsity inference for SeqOp supports only F64/F32 and "
         "SI64 value types");
 }
+
+
 
 // --------------------------------------------------------------------
 // Elementwise Binary
@@ -264,7 +317,7 @@ std::vector<double> daphne::EwDivOp::inferSparsity() {
     double lhsSparsity = lhs.getSparsity();
     double rhsSparsity = rhs.getSparsity();
 
-    if (lhsSparsity == -1.0 || (lhsSparsity == -1.0 && rhsSparsity == -1.0)) {
+    if (lhsSparsity == -1.0 || rhsSparsity == -1.0) {
         return {-1.0};
     }
     return {lhsSparsity};
@@ -272,7 +325,9 @@ std::vector<double> daphne::EwDivOp::inferSparsity() {
 
 std::vector<double> daphne::EwPowOp::inferSparsity() {
     /**
-     * First handles trivial cases and then uses the probability of P(A && !B).
+     * If the lhs sparsity is unknown and the rhs sparsity is zero, the resulting matrix will always have a sparsity of 1
+     * If the rhs sparsity is unknown, the resulting sparsity will be 1 if the lhs sparsity is 1
+     * If both sparsities are known, first handle the trivial cases and then use P(A && !B).
      */
     auto lhs = getLhs().getType().dyn_cast<daphne::MatrixType>();
     auto rhs = getRhs().getType().dyn_cast<daphne::MatrixType>();
@@ -306,6 +361,10 @@ std::vector<double> daphne::EwPowOp::inferSparsity() {
 }
 
 std::vector<double> daphne::EwModOp::inferSparsity() {
+    /* 
+    * Returns a sparsity of 0 only if the lhssparsity is known and 0 as well.
+    * In other cases we either know too little about the value distribution in the matrices or have a chance of 0mod0, which results in an error.
+    */
     auto lhs = getLhs().getType().dyn_cast<daphne::MatrixType>();
 
     double lhsSparsity = lhs.getSparsity();
@@ -376,6 +435,10 @@ std::vector<double> daphne::EwXorOp::inferSparsity() {
 }
 
 std::vector<double> daphne::EwEqOp::inferSparsity() {
+    /*
+    * If both input matrices have a sparsity of 0, the output sparsity will be 1.
+    * If one matrix has a sparsity of 0 and the other 1, the output sparsity will always be 0.
+    */
     auto lhs = getLhs().getType().dyn_cast<daphne::MatrixType>();
     auto rhs = getRhs().getType().dyn_cast<daphne::MatrixType>();
 
@@ -393,6 +456,9 @@ std::vector<double> daphne::EwEqOp::inferSparsity() {
 }
 
 std::vector<double> daphne::EwNeqOp::inferSparsity() {
+    /*
+    * The inverted method of EwEq.
+    */
     auto lhs = getLhs().getType().dyn_cast<daphne::MatrixType>();
     auto rhs = getRhs().getType().dyn_cast<daphne::MatrixType>();
 
@@ -410,6 +476,10 @@ std::vector<double> daphne::EwNeqOp::inferSparsity() {
 }
 
 std::vector<double> daphne::EwLeOp::inferSparsity() {
+    /*
+    * Returns a sparsity of 1 if both input matrices have a sparsity of 0.
+    * Unknown output sparsity for all other cases.
+    */
     auto lhs = getLhs().getType().dyn_cast<daphne::MatrixType>();
     auto rhs = getRhs().getType().dyn_cast<daphne::MatrixType>();
 
@@ -425,6 +495,10 @@ std::vector<double> daphne::EwLeOp::inferSparsity() {
 }
 
 std::vector<double> daphne::EwGeOp::inferSparsity() {
+    /*
+    * Returns a sparsity of 1 if both input matrices have a sparsity of 0.
+    * Unknown output sparsity for all other cases.
+    */
     auto lhs = getLhs().getType().dyn_cast<daphne::MatrixType>();
     auto rhs = getRhs().getType().dyn_cast<daphne::MatrixType>();
 
@@ -507,7 +581,7 @@ std::vector<double> daphne::OuterDivOp::inferSparsity() {
     double lhsSparsity = lhs.getSparsity();
     double rhsSparsity = rhs.getSparsity();
 
-    if (lhsSparsity == -1.0 || (lhsSparsity == -1.0 && rhsSparsity == -1.0)) {
+    if (lhsSparsity == -1.0 || rhsSparsity == -1.0) {
         return {-1.0};
     }
     return {lhsSparsity};
@@ -683,13 +757,6 @@ std::vector<double> daphne::OuterGeOp::inferSparsity() {
 }
 
 // --------------------------------------------------------------------
-// Aggregation
-// --------------------------------------------------------------------
-
-
-
-
-// --------------------------------------------------------------------
 // Reorganization
 // --------------------------------------------------------------------
 
@@ -741,6 +808,66 @@ std::vector<double> daphne::RowBindOp::inferSparsity() {
     int64_t rhsCells = rhsCols * rhsRows;
 
     return {(lhsSparsity * lhsCells + rhsSparsity * rhsCells) / (lhsCells + rhsCells)};
+}
+
+// --------------------------------------------------------------------
+// Other
+// --------------------------------------------------------------------
+
+std::vector<double> daphne::ReplaceOp::inferSparsity() {
+    /*
+    * Returns 1.0 if all zeros are replaced with a non-zero scalar, the same sparsity in case the zeros were to be "replaced" with zeros
+    * and -1 in all other cases.
+    * 
+    * Two seperate attribute if-else statements are needed as the pattern and replacement can have different datatypes.
+    */
+    auto co = CompilerUtils::constantOfAnyType(getPattern());
+    if (!co) {
+        return {-1.0};
+    }
+
+    double vPattern = 0.0;
+    auto valueAttr = co->getAttr("value");
+    if (auto floatAttr = valueAttr.dyn_cast<mlir::FloatAttr>()) {
+        vPattern = floatAttr.getValueAsDouble();
+    } else if (auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>()) {
+        if (intAttr.getType().isSignlessInteger()) {
+            vPattern = static_cast<double>(intAttr.getInt());
+        } else if (intAttr.getType().isSignedInteger()) {
+            vPattern = static_cast<double>(intAttr.getSInt());
+        }
+    } else {
+        throw std::runtime_error("Unsupported type for FillOp sparsity inference");
+    }
+
+    co = CompilerUtils::constantOfAnyType(getReplacement());
+    if (!co) {
+        return {-1.0};
+    }
+
+    double vReplace = 0.0;
+    valueAttr = co->getAttr("value");
+    if (auto floatAttr = valueAttr.dyn_cast<mlir::FloatAttr>()) {
+        vReplace = floatAttr.getValueAsDouble();
+    } else if (auto intAttr = valueAttr.dyn_cast<mlir::IntegerAttr>()) {
+        if (intAttr.getType().isSignlessInteger()) {
+            vReplace = static_cast<double>(intAttr.getInt());
+        } else if (intAttr.getType().isSignedInteger()) {
+            vReplace = static_cast<double>(intAttr.getSInt());
+        }
+    } else {
+        throw std::runtime_error("Unsupported type for FillOp sparsity inference");
+    }
+
+    auto argTy = getArg().getType().dyn_cast<daphne::MatrixType>();
+    auto sparsity = argTy.getSparsity();
+
+    if (vPattern == 0.0 && vReplace != 0.0) {
+        return {1.0};
+    } else if (vPattern == 0.0 && vReplace == 0.0) {
+        return {sparsity};
+    }
+    return {-1.0};
 }
 
 // ****************************************************************************
@@ -829,7 +956,7 @@ std::vector<double> daphne::tryInferSparsity(Operation *op) {
                 sparsity = spRhs;
         }
 
-        if(op->hasTrait<SparseIfInputSparse>()) {
+        if(op->hasTrait<SparseIfAllInputSparse>()) {
             auto spLhs = getSparsityOrUnknownFromType(op->getOperand(0));
             if (op->getNumOperands() > 1) {
                 auto spRhs = getSparsityOrUnknownFromType(op->getOperand(1));
@@ -847,7 +974,7 @@ std::vector<double> daphne::tryInferSparsity(Operation *op) {
             }
         }
 
-        if(op->hasTrait<DenseIfInputDense>()) {
+        if(op->hasTrait<DenseIfAllInputDense>()) {
             auto spLhs = getSparsityOrUnknownFromType(op->getOperand(0));
             if (op->getNumOperands() > 1) {
                 auto spRhs = getSparsityOrUnknownFromType(op->getOperand(1));
@@ -865,7 +992,7 @@ std::vector<double> daphne::tryInferSparsity(Operation *op) {
             }
         }
 
-        if(op->hasTrait<SparsityRemainsIfInputOneOrZero>()) {
+        if(op->hasTrait<SparsityRemainsIfAllInputOneOrZero>()) {
             auto spLhs = getSparsityOrUnknownFromType(op->getOperand(0));
             if (op->getNumOperands() > 1) {
                 auto spRhs = getSparsityOrUnknownFromType(op->getOperand(1));
