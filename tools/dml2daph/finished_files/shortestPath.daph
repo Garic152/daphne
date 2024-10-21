@@ -1,0 +1,44 @@
+def m_shortestPath(G:matrix<f64>, maxi:si64 /*= 0*/, sourceNode:si64, verbose:bool /*= false*/) -> matrix<f64> {
+  
+  if (verbose) {
+    print("SHORTEST PATH CALCULATION:");
+  }
+  
+  
+  if (aggMin(G) < 0) {
+    stop("Shortest Path: All values in G must be positive.");
+  }
+  
+  
+  if (as.si64(ncol(G)) != as.si64(nrow(G))) {
+    stop("Shortest Path: input graph G must be a squared matrix.");
+  }
+  
+  minDist = fill(as.f64(inf), as.si64(nrow(G)), 1);
+  minDist[sourceNode - 1, 0] = as.matrix(0.0);
+  iter = 1;
+  diff = inf;
+  while (diff > 0 && (maxi == 0 || iter <= maxi)) {
+    Gp = (G + (G != 0) * minDist) ^ ((-1.0));
+    Gp = replace(Gp, inf, 0);
+    Gp = replace(Gp, nan, 0);
+    u = min(t(1 / aggMax(Gp, 1)), minDist);
+    diff = sum(minDist != u);
+    minDist = as.matrix<f64>(u);
+    
+    if (verbose) {
+      print("Shortest Path:");
+      print("iter = " + iter + ", diff = " + diff);
+    }
+    
+    iter = as.si64(iter + 1);
+  }
+  C = minDist;
+  
+  if (verbose) {
+    print("\nShortest Path:"); print(C);
+  }
+  
+  return as.matrix<f64>(C);
+}
+

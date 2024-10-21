@@ -1,0 +1,23 @@
+def m_scale(X:matrix<f64>, center:bool /*= true*/, scale:bool /*= true*/) -> matrix<f64>, matrix<f64>, matrix<f64> {
+  Centering = fill(as.f64(0), 1, 1);
+  ScaleFactor = fill(as.f64(0), 1, 1);
+  
+  if (center) {
+    Centering = mean(X, 1);
+    Centering = replace(Centering, nan, 0);
+    X = as.matrix<f64>(X - Centering);
+  }
+  
+  
+  if (scale) {
+    N = as.si64(nrow(X));
+    ScaleFactor = sqrt(sum(X ^ 2, 1) / (N - 1));
+    ScaleFactor = replace(ScaleFactor, nan, 1);
+    ScaleFactor = replace(ScaleFactor, 0, 1);
+    X = as.matrix<f64>(X / ScaleFactor);
+  }
+  
+  Out = X;
+  return as.matrix<f64>(Out), as.matrix<f64>(Centering), as.matrix<f64>(ScaleFactor);
+}
+

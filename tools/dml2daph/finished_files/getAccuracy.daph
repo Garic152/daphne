@@ -1,0 +1,20 @@
+def m_getAccuracy(y:matrix<f64>, yhat:matrix<f64>, isWeighted:bool /*= false*/) -> f64 {
+  accuracy = 0.0;
+  if ((isWeighted == false)) {
+    sum = sum(y == yhat);
+    accuracy = (sum / as.si64(nrow(y))) * 100;
+  } else {
+    n = as.si64(nrow(y));
+    classes = ctable(y, 1, aggMax(y), 1);
+    resp = fill(as.f64(0), as.si64(nrow(y)), as.si64(nrow(classes)));
+    resp = as.matrix<f64>(resp + t(seq(as.f64(1), as.si64(nrow(classes)), 1 <= as.si64(nrow(classes)) ? 1 : -1)));
+    respY = resp == y;
+    respYhat = resp == yhat;
+    pred = respY * respYhat;
+    classes = replace(classes, 0, 1);
+    accuracy = as.f64(mean(sum(pred, 1) / t(classes)) * 100);
+  }
+  
+  return as.f64(accuracy);
+}
+

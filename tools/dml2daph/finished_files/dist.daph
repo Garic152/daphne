@@ -1,0 +1,8 @@
+def m_dist(X:matrix<f64>) -> matrix<f64> {
+  n = as.si64(nrow(X));
+  s = sum(X ^ 2, 0);
+  Y = sqrt((-2.0) * X @ t(X) + s + t(s));
+  Y = replace(Y, nan, 0);
+  return as.matrix<f64>(Y);
+}
+
