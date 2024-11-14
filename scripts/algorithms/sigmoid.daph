@@ -1,0 +1,10 @@
+def m_sigmoid(X:matrix<f64>) -> matrix<f64> {
+  Y = 1 / (1 + exp((0.0 - X)));
+  return as.matrix<f64>(Y);
+}
+
+def s_sigmoid(x:f64) -> f64 {
+  y = 1 / (1 + exp((0.0 - x)));
+  return as.f64(y);
+}
+

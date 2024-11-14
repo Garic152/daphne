@@ -1,0 +1,22 @@
+def m_confusionMatrix(P:matrix<f64>, Y:matrix<f64>) -> matrix<f64>, matrix<f64> {
+  dim = max(aggMax(Y), aggMax(P));
+  
+  if (ncol(P) > 1 || ncol(Y) > 1) {
+    stop("confusionMatrix: Invalid input number of cols should be 1 in both P [" + as.si64(ncol(P)) + "] and Y [" + as.si64(ncol(Y)) + "]");
+  }
+  
+  
+  if (nrow(P) != nrow(Y)) {
+    stop("confusionMatrix: The number of rows have to be equal in both P [" + as.si64(nrow(P)) + "] and Y [" + as.si64(nrow(Y)) + "]");
+  }
+  
+  
+  if (aggMin(P) < 1 || aggMin(Y) < 1) {
+    stop("confusionMatrix: All Values in P and Y should be abore or equal to 1, min(P):" + aggMin(P) + " min(Y):" + aggMin(Y));
+  }
+  
+  confusionSum = ctable(P, Y, dim, dim);
+  confusionAvg = confusionSum / max(1, sum(confusionSum, 1));
+  return as.matrix<f64>(confusionSum), as.matrix<f64>(confusionAvg);
+}
+

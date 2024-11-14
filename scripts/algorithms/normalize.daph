@@ -1,0 +1,11 @@
+import "normalizeApply.daph";
+
+def m_normalize(X:matrix<f64>) -> matrix<f64>, matrix<f64>, matrix<f64> {
+  # compute feature ranges for transformations
+  cmin = aggMin(X, 1);
+  cmax = aggMax(X, 1);
+
+  Y = normalizeApply.m_normalizeApply(X, cmin, cmax);
+
+  return Y, cmin, cmax;
+}

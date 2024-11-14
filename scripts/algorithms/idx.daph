@@ -1,0 +1,5 @@
+def m_idx(X:matrix<f64>) -> matrix<f64> {
+  Y = idxMin(X, 0);
+  return as.matrix<f64>(Y);
+}
+

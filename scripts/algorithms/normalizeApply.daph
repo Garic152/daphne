@@ -1,0 +1,7 @@
+def m_normalizeApply(X:matrix<f64>, cmin:matrix<f64>, cmax:matrix<f64>) -> matrix<f64> {
+  diff = (cmax - cmin);
+  diff = replace(diff, 0, 1);
+  Y = (X - cmin) / diff;
+  return as.matrix<f64>(Y);
+}
+
